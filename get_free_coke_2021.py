@@ -2,6 +2,8 @@ import requests
 import time
 import logging
 import urllib3
+import json
+
 ########################
 # Settings
 '''
@@ -10,10 +12,10 @@ count_limit为运行次数
 delay为每次运行等待时间
 '''
 cookie = ''
-count_limit = 1
-delay = 1
+count_limit = 10
+delay = 0.5
 ########################
-logger = logging.StreamHandler()
+logger = logging.getLogger('log')
 # Disable warning
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -26,6 +28,13 @@ def log_to_console():
     logger = logging.getLogger('log')
     logger.setLevel('DEBUG')
     logger.addHandler(console_handler)
+
+
+def check_availability(string):
+    global logger
+    if json.loads(string)["scene_code"] == 109:
+        logger.critical("游戏次数已满，退出")
+        exit()
 
 
 def create():
@@ -53,6 +62,7 @@ def create():
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
     # print(response.content.decode('unicode_escape'))
     logger.info(response.content.decode('unicode_escape'))
+    check_availability(response.text)
 
 
 def compose():
